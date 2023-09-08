@@ -6,8 +6,6 @@ import CorePersistence
 import HadeanIdentifiers
 import Swallow
 
-public typealias _TextEmbeddingType = [Double]
-
 /// A type that represents an array of text embeddings.
 ///
 /// Text embeddings are vector representations of text.

@@ -44,7 +44,7 @@ extension LargeLanguageModelServices {
 }
 
 public protocol ResolvedLLMService: LargeLanguageModelServices {
-    associatedtype Tokenizer: LLMTokenizer
+    associatedtype Tokenizer: PromptLiteralTokenizer
 }
 
 extension LargeLanguageModelServices {

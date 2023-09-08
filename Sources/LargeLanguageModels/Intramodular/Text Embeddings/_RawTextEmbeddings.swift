@@ -22,7 +22,7 @@ public struct _RawTextEmbedding: Codable, CustomStringConvertible, Hashable, Sen
         var result = rawValue.map {
             String(format: "%.3f", $0)
         }
-        .joined(separator: ", ")
+            .joined(separator: ", ")
         
         result = "[" + result + "]"
         
