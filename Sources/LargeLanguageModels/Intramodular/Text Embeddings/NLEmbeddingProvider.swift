@@ -70,3 +70,27 @@ public final class NLEmbeddingProvider: TextEmbeddingsProvider {
         )
     }
 }
+
+extension _MLModelIdentifier {
+    /// The on-device word-embedding model provided by Apple.
+    public static func wordEmbedding(
+        _ language: NLLanguage.Name
+    ) -> Self {
+        Self(
+            provider: .apple,
+            name: "word-embedding-\(language.rawValue)",
+            revision: NLEmbedding.currentRevision(for: .init(rawValue: language.rawValue)).description
+        )
+    }
+    
+    /// The on-device sentence-embedding model provided by Apple.
+    public static func sentenceEmbedding(
+        _ language: NLLanguage.Name
+    ) -> Self {
+        Self(
+            provider: .apple,
+            name: "sentence-embedding-\(language.rawValue)",
+            revision: NLEmbedding.currentRevision(for: .init(rawValue: language.rawValue)).description
+        )
+    }
+}
