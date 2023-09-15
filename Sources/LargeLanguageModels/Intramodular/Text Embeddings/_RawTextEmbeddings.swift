@@ -8,8 +8,11 @@ import CoreTransferable
 import HadeanIdentifiers
 import Swallow
 
+/// A type that represents the embedding of a single text.
+///
+/// It is essentially just a wrapper around `Array<Double>` for now, but will expand to support various different forms of storage (including quantized representations).
 @frozen
-public struct _RawTextEmbedding: Codable, CustomStringConvertible, Hashable, Sendable {
+public struct _RawTextEmbedding: Hashable, Sendable {
     public typealias RawValue = [Double]
     
     public let rawValue: RawValue
@@ -17,18 +20,11 @@ public struct _RawTextEmbedding: Codable, CustomStringConvertible, Hashable, Sen
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
-    
-    public var description: String {
-        var result = rawValue.map {
-            String(format: "%.3f", $0)
-        }
-            .joined(separator: ", ")
-        
-        result = "[" + result + "]"
-        
-        return result
-    }
-    
+}
+
+// MARK: - Implemented Conformances
+
+extension _RawTextEmbedding: Codable {
     @inlinable
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -44,45 +40,14 @@ public struct _RawTextEmbedding: Codable, CustomStringConvertible, Hashable, Sen
     }
 }
 
-public struct _RawTextEmbeddingPair: HadeanIdentifiable, Hashable, Sendable {
-    public static var hadeanIdentifier: HadeanIdentifier {
-        "dapup-numuz-koluh-goduv"
-    }
-    
-    public let text: String
-    public let embedding: _RawTextEmbedding
-    
-    public init(text: String, embedding: _RawTextEmbedding) {
-        self.text = text
-        self.embedding = embedding
-    }
-}
-
-// MARK: - Conformances
-
-extension _RawTextEmbeddingPair: Codable {
-    public enum CodingKeys: CodingKey {
-        case text
-        case embedding
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
+extension _RawTextEmbedding: CustomStringConvertible {
+    public var description: String {
+        var result = rawValue
+            .map({ $0.formatted(toDecimalPlaces: 3) })
+            .joined(separator: ", ")
         
-        self.text = try container.decode(forKey: .text)
-        self.embedding = try container.decode(forKey: .embedding)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
+        result = "[" + result + "]"
         
-        try container.encode(text, forKey: .text)
-        try container.encode(embedding, forKey: .embedding)
-    }
-}
-
-extension _RawTextEmbeddingPair: Identifiable {
-    public var id: String {
-        text
+        return result
     }
 }

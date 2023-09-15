@@ -56,6 +56,32 @@ extension AbstractLLM.ChatMessage: CustomDebugStringConvertible {
 // MARK: - Initializers
 
 extension AbstractLLM.ChatMessage {
+    public static func assistant(
+        _ content: PromptLiteral
+    ) -> Self {
+        Self(role: .assistant, content: content)
+    }
+    
+    public static func assistant(
+        _ content: () -> PromptLiteral
+    ) -> Self {
+        Self(role: .assistant, content: content())
+    }
+    
+    public static func assistant(
+        _ content: String
+    ) -> Self {
+        Self(role: .assistant, content: content)
+    }
+    
+    public static func assistant(
+        _ content: () -> String
+    ) -> Self {
+        Self(role: .assistant, content: content())
+    }
+}
+
+extension AbstractLLM.ChatMessage {
     public static func system(
         _ content: PromptLiteral
     ) -> Self {
@@ -79,7 +105,9 @@ extension AbstractLLM.ChatMessage {
     ) -> Self {
         Self(role: .system, content: content())
     }
-    
+}
+
+extension AbstractLLM.ChatMessage {
     public static func user(
         _ content: PromptLiteral
     ) -> Self {

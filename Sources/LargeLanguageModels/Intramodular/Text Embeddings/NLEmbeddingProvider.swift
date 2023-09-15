@@ -62,7 +62,7 @@ public final class NLEmbeddingProvider: TextEmbeddingsProvider {
         return try TextEmbeddings(
             model: model,
             data:  request.strings.map { string in
-                _RawTextEmbeddingPair(
+                TextEmbeddings.Element(
                     text: string,
                     embedding: .init(rawValue: try embedding.vector(for: string).unwrap())
                 )

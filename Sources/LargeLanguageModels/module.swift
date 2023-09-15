@@ -7,7 +7,7 @@
 
 public enum _module {
     public static func initialize() {
-        _UniversalTypeRegistry.register(_RawTextEmbeddingPair.self)
         _UniversalTypeRegistry.register(TextEmbeddings.self)
+        _UniversalTypeRegistry.register(TextEmbeddings.Element.self)
     }
 }
