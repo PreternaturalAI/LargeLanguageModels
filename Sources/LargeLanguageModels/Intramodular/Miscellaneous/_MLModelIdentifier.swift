@@ -6,6 +6,13 @@ import CorePersistence
 import Foundation
 import Swallow
 
+public protocol _MLModelIdentifierConvertible {
+    func _toMLModelIdentifier() -> _MLModelIdentifierConvertible
+}
+
+/// A general purpose type to identify distinct machine-learning models.
+///
+/// It's intended for use with both local and API-only models.
 public struct _MLModelIdentifier: HadeanIdentifiable, Hashable, Sendable {
     public static var hadeanIdentifier: HadeanIdentifier {
         "ludab-gulor-porin-zuvok"

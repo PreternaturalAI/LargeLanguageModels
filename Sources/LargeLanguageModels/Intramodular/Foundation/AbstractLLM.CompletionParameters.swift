@@ -17,7 +17,7 @@ extension AbstractLLM {
         case max
         case fixed(Int)
         
-        var fixedValue: Int? {
+        public var fixedValue: Int? {
             guard case .fixed(let value) = self else {
                 return nil
             }

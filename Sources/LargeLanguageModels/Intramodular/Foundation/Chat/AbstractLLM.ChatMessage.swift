@@ -49,7 +49,7 @@ extension AbstractLLM.ChatMessage {
 
 extension AbstractLLM.ChatMessage: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "\(role): \(content)"
+        "[\(role)]: \(content.delimited(by: .quotationMark))"
     }
 }
 
