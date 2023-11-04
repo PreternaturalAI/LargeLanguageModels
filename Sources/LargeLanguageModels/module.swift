@@ -2,7 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
-@_exported import HadeanIdentifiers
+@_exported import CorePersistence
 @_exported import Merge
 
 public enum _module {

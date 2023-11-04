@@ -5,7 +5,6 @@
 import Accelerate
 import CorePersistence
 import CoreTransferable
-import HadeanIdentifiers
 import Swallow
 
 /// A type that represents the embedding of a single text.

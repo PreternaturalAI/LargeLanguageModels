@@ -3,7 +3,6 @@
 //
 
 import CorePersistence
-import HadeanIdentifiers
 import Swallow
 
 /// A type that represents an array of text embeddings.
