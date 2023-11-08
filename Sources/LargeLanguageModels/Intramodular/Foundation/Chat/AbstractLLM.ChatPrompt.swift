@@ -33,7 +33,15 @@ extension AbstractLLM {
 }
 
 extension AbstractLLM.ChatPrompt {
-    public func appending(_ message: AbstractLLM.ChatMessage) -> Self {
+    public mutating func append(
+        _ message: AbstractLLM.ChatMessage
+    ) {
+        messages.append(message)
+    }
+
+    public func appending(
+        _ message: AbstractLLM.ChatMessage
+    ) -> Self {
         .init(messages: messages.appending(message))
     }
 }
