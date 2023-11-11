@@ -6,10 +6,6 @@ import Diagnostics
 import Foundation
 import Swallow
 
-public enum PromptLiteralError: Error {
-    case failedToReduceToPrompt(for: AbstractLLM.CompletionType?)
-}
-
 /// The raw body of a text or a chat prompt.
 ///
 /// Note:

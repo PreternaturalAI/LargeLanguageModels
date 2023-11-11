@@ -31,7 +31,7 @@ extension AbstractLLM {
 
 extension AbstractLLM {
     public struct CompletionHeuristics: ExpressibleByNilLiteral {
-        public var inference: [InferenceHeuristicFlag] = []
+        public var inference: [InferenceHeuristicFlag] = [.maximize(.reasoning)]
         
         public init(
             inference: InferenceHeuristicFlag...
@@ -47,6 +47,8 @@ extension AbstractLLM {
 
 extension AbstractLLM.CompletionHeuristics {
     public var wantsMaximumReasoning: Bool {
-        inference.contains(where: { $0._maximizeValue.flatMap({ $0.contains(.reasoning) }) ?? false })
+        inference.contains(
+            where: { $0._maximizeValue.flatMap({ $0.contains(.reasoning) }) ?? false }
+        )
     }
 }

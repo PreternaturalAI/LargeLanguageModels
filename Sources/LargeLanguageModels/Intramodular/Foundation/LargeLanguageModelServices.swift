@@ -5,19 +5,6 @@
 import Merge
 import Swallow
 
-public enum LargeLanguageModelServicesError: _ErrorX {
-    case unsupportedPromptType(Metatype<any AbstractLLM.Prompt.Type>)
-    case _catchAll(AnyError)
-    
-    public static func unsupportedPromptType(_ type: any AbstractLLM.Prompt.Type) -> Self {
-        .unsupportedPromptType(Metatype(type))
-    }
-    
-    public init?(_catchAll error: AnyError) throws {
-        self = ._catchAll(error)
-    }
-}
-
 public struct _LLMServicesConcreteDemand {
     public let parameters: any AbstractLLM.CompletionParameters
     public let heuristics: AbstractLLM.CompletionHeuristics
@@ -32,19 +19,15 @@ public protocol LargeLanguageModelServices {
     
     func _resolved(
         for demand: _LLMServicesConcreteDemand
-    ) async throws -> any ResolvedLLMService
+    ) async throws -> any ResolveLargeLanguageModelService
 }
 
 extension LargeLanguageModelServices {
     public func _resolved(
         for demand: _LLMServicesConcreteDemand
-    ) async throws -> any ResolvedLLMService {
+    ) async throws -> any ResolveLargeLanguageModelService {
         fatalError(reason: .unimplemented)
     }
-}
-
-public protocol ResolvedLLMService: LargeLanguageModelServices {
-    associatedtype Tokenizer: PromptLiteralTokenizer
 }
 
 extension LargeLanguageModelServices {
