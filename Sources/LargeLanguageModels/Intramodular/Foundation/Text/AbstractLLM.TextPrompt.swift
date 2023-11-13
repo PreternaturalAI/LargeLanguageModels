@@ -13,7 +13,7 @@ extension AbstractLLM {
         public static var completionType: AbstractLLM.CompletionType? {
             .text
         }
-
+        
         @_HashableExistential
         public var prefix: any PromptLiteralConvertible
         
@@ -27,11 +27,7 @@ extension AbstractLLM {
     }
 }
 
-extension AbstractLLM.Prompt {
-    public func prefix(_ prompt: String) {
-        
-    }
-}
+// MARK: - Conformances
 
 extension AbstractLLM.TextPrompt: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {

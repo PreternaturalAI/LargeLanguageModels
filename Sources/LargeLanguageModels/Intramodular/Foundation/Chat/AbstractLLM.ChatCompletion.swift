@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Compute
 import Foundation
 import Swallow
 
@@ -20,5 +21,23 @@ extension AbstractLLM {
         public var debugDescription: String {
             message.debugDescription
         }
+    }
+}
+
+// MARK: - Conformances
+
+extension AbstractLLM.ChatCompletion: Partializable {
+    public typealias Partial = Self
+    
+    public mutating func coalesceInPlace(
+        with partial: Partial
+    ) throws {
+        fatalError(reason: .unexpected)
+    }
+    
+    public static func coalesce(
+        _ partials: some Sequence<Partial>
+    ) throws -> Self {
+        fatalError(reason: .unexpected)
     }
 }

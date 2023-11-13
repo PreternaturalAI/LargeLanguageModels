@@ -6,7 +6,13 @@ import Diagnostics
 import Foundation
 import Swallow
 
+public protocol __AbstractLLM_ChatRole_Initiable {
+    init(from role: AbstractLLM.ChatRole) throws
+}
+
 extension AbstractLLM {
+    public typealias ChatRoleInitiable = __AbstractLLM_ChatRole_Initiable
+    
     public enum ChatRole: CaseIterable, Hashable, Sendable {
         public enum Other: String, CaseIterable, CustomStringConvertible, Hashable, Sendable {
             /// The function that was just run.

@@ -2,12 +2,13 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Compute
 import Foundation
 import Swallow
 
 public protocol __AbstractLLM_Prompt: Hashable, Sendable {
     associatedtype CompletionParameters: __AbstractLLM_CompletionParameters
-    associatedtype Completion
+    associatedtype Completion: Partializable
     
     static var completionType: AbstractLLM.CompletionType? { get }
 }
@@ -69,7 +70,39 @@ extension AbstractLLM.ChatOrTextPrompt {
     }
 }
 
-// MARK: - Extensions
+// MARK: - Conformances
+
+extension AbstractLLM.ChatOrTextCompletion: Partializable {
+    public enum Partial {
+        case text(AbstractLLM.TextCompletion.Partial)
+        case chat(AbstractLLM.ChatCompletion.Partial)
+    }
+    
+    public mutating func coalesceInPlace(
+        with partial: Partial
+    ) throws {
+        switch (self, partial) {
+            case (.text(var lhs), .text(let rhs)):
+                try lhs.coalesceInPlace(with: rhs)
+                
+                self = .text(lhs)
+            case (.chat(var lhs), .chat(let rhs)):
+                try lhs.coalesceInPlace(with: rhs)
+                
+                self = .chat(lhs)
+            default:
+                assertionFailure()
+                
+                break
+        }
+    }
+    
+    public static func coalesce(
+        _ partials: some Sequence<Partial>
+    ) throws -> Self {
+        fatalError()
+    }
+}
 
 extension AbstractLLM.ChatOrTextPrompt: _UnwrappableTypeEraser {
     public typealias _UnwrappedBaseType = any AbstractLLM.Prompt
