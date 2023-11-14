@@ -116,7 +116,7 @@ extension AbstractLLM.ChatOrTextPrompt: _UnwrappableTypeEraser {
             case let prompt as AbstractLLM.ChatPrompt:
                 self = .chat(prompt)
             default:
-                fatalError(reason: .unexpected)
+                fatalError(.unexpected)
         }
     }
     

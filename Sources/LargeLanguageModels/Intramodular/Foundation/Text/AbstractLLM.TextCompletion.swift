@@ -37,12 +37,12 @@ extension AbstractLLM.TextCompletion: Partializable {
     public mutating func coalesceInPlace(
         with partial: Partial
     ) throws {
-        fatalError(reason: .unexpected)
+        fatalError(.unexpected)
     }
     
     public static func coalesce(
         _ partials: some Sequence<Partial>
     ) throws -> Self {
-        fatalError(reason: .unexpected)
+        fatalError(.unexpected)
     }
 }
