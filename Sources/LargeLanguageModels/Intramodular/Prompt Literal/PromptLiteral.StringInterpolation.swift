@@ -48,6 +48,8 @@ extension PromptLiteral.StringInterpolation.Component.Payload: _MaybeAsyncProtoc
         switch self {
             case .stringLiteral:
                 return false
+            case .image:
+                return nil
             case .localizedStringResource:
                 return false
             case .promptLiteralConvertible(let variable):
@@ -63,6 +65,8 @@ extension PromptLiteral.StringInterpolation.Component.Payload: _MaybeAsyncProtoc
         switch self {
             case .stringLiteral:
                 return self
+            case .image:
+                throw Never.Reason.unimplemented
             case .localizedStringResource:
                 return self
             case .promptLiteralConvertible(let variable):
@@ -213,6 +217,8 @@ extension PromptLiteral.StringInterpolation.Component {
         switch payload {
             case .stringLiteral:
                 return true
+            case .image:
+                return false
             case .localizedStringResource:
                 return true
             case .promptLiteralConvertible:

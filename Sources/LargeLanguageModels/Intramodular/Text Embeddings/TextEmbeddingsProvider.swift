@@ -59,13 +59,3 @@ public struct TextEmbeddingsGenerationRequest {
         }
     }
 }
-
-extension DependencyValues {
-    public var textEmbeddingsProvider: (any TextEmbeddingsProvider)? {
-        get {
-            self[_OptionalDependencyKey.self]
-        } set {
-            self[_OptionalDependencyKey.self] = newValue
-        }
-    }
-}

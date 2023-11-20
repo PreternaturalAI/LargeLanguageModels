@@ -73,12 +73,6 @@ extension AbstractLLM.ChatOrTextCompletion {
     }
 }
 
-extension AbstractLLM.ChatCompletion {
-    public func _stripToText() throws -> String {
-        try message.content._stripToText()
-    }
-}
-
 extension AbstractLLM.ChatOrTextCompletion {
     public func _stripToRawLiteral() throws -> PromptLiteral {
         switch self {
@@ -86,15 +80,6 @@ extension AbstractLLM.ChatOrTextCompletion {
                 return .init(stringLiteral: completion.text)
             case .chat(let completion):
                 return completion.message.content
-        }
-    }
-
-    public func _stripToText() throws -> String {
-        switch self {
-            case .text(let completion):
-                return completion.text
-            case .chat(let completion):
-                return try completion._stripToText()
         }
     }
 }

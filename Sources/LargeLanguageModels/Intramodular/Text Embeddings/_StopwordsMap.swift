@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-public struct _StopwordsCollection {
+public struct _StopwordsMap {
     private let rawValue: [ISO639LanguageCode: Set<String>]
     
     private  init(rawValue: [ISO639LanguageCode: Set<String>]) {
@@ -19,7 +19,7 @@ public struct _StopwordsCollection {
     }
 }
 
-extension _StopwordsCollection {
+extension _StopwordsMap {
     public static let shared: Self = {
         do {
             return try Self.load()

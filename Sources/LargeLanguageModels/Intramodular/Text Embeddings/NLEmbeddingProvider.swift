@@ -5,6 +5,7 @@
 import NaturalLanguage
 import Swallow
 
+/// A `TextEmbeddingsProvider` that wraps Apple's system embedding models.
 public final class NLEmbeddingProvider: TextEmbeddingsProvider {
     public enum EmbeddingType {
         case word

@@ -10,13 +10,17 @@ extension PromptLiteral {
         public struct Component {
             public enum PayloadType {
                 case string
+                case image
                 case dynamicVariable
                 case functionCall
                 case functionInvocation
             }
             
             public enum Payload {
+                public typealias Image = PromptLiteral.StringInterpolation.Component.Payload.Image
+                
                 case string(String)
+                case image(Image)
                 case dynamicVariable(any _opaque_DynamicPromptVariable)
                 case functionCall(AbstractLLM.ChatPrompt.FunctionCall)
                 case functionInvocation(AbstractLLM.ChatPrompt.FunctionInvocation)
@@ -25,6 +29,8 @@ extension PromptLiteral {
                     switch self {
                         case .string:
                             return .string
+                        case .image:
+                            return .image
                         case .dynamicVariable:
                             return .dynamicVariable
                         case .functionCall:
@@ -82,6 +88,8 @@ extension PromptLiteral {
             switch component.payload {
                 case .stringLiteral(let string):
                     append(.init(payload: .string(string), context: component.context))
+                case .image(let image):
+                    append(.init(payload: .image(image), context: component.context))
                 case .localizedStringResource(let resource):
                     append(.init(payload: .string(try resource._toNSLocalizedString()), context: component.context))
                 case .promptLiteralConvertible(let convertible):

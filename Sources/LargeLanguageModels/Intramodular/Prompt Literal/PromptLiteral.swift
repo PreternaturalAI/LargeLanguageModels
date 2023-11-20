@@ -118,16 +118,12 @@ extension PromptLiteral: CustomDebugStringConvertible, CustomStringConvertible {
     public var description: String {
         debugDescription
     }
-    
-    public func _stripToText() throws -> String {
-        try stringInterpolation.components.map({ try $0._stripToText() }).joined()
-    }
 }
 
 // MARK: - Constructors
 
 extension PromptLiteral {
-    private var _skipSeparator: Bool {
+    private var _skipSeparatorInConcatenation: Bool {
         guard stringInterpolation.components.count == 1 else {
             return false
         }
@@ -135,6 +131,8 @@ extension PromptLiteral {
         switch stringInterpolation.components.first!.payload {
             case .stringLiteral:
                 return false
+            case .image:
+                return true
             case .localizedStringResource:
                 return false
             case .promptLiteralConvertible:
@@ -172,7 +170,7 @@ extension PromptLiteral {
             result.stringInterpolation.components =  literals
                 .interspersed(
                     with: PromptLiteral(stringLiteral: separator),
-                    where: { !$0._skipSeparator }
+                    where: { !$0._skipSeparatorInConcatenation }
                 )
                 .flatMap({ $0.stringInterpolation.components })
         } else {
