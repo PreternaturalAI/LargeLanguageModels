@@ -239,4 +239,13 @@ extension PromptLiteral {
 
         return stringInterpolation.components.contains(where: { !$0._isKnownString }) == false
     }
+    
+    /// Whether this prompt literal contains any images.
+    public var _containsImages: Bool {
+        guard !isEmpty else {
+            return false
+        }
+        
+        return stringInterpolation.components.contains(where: { $0.payload._isImage })
+    }
 }

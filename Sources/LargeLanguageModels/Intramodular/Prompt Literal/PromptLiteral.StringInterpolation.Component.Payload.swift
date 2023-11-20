@@ -14,6 +14,14 @@ extension PromptLiteral.StringInterpolation.Component {
         case promptLiteralConvertible(any PromptLiteralConvertible)
         case dynamicVariable(any _opaque_DynamicPromptVariable)
         case other(Other)
+        
+        var _isImage: Bool {
+            guard case .image = self else {
+                return false
+            }
+            
+            return true
+        }
     }
 }
 
