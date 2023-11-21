@@ -77,8 +77,14 @@ extension PromptLiteral {
         var components: [_Degenerate.Component] = []
         
         func append(_ component: _Degenerate.Component) {
-            if let last = components.last, let merged = try? last.appending(contentsOf: component) {
-                components.mutableLast = merged
+            if let last = components.last, component.payload.type != .image {
+                do {
+                    let merged = try last.appending(contentsOf: component)
+                    
+                    components.mutableLast = merged
+                } catch {
+                    components.append(component)
+                }
             } else {
                 components.append(component)
             }
