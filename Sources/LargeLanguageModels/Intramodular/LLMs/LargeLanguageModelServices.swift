@@ -15,7 +15,7 @@ public protocol LargeLanguageModelServices {
     /// The list of available LLMs.
     ///
     /// `nil` if unknown.
-    var _availableLLMs: [_MLModelIdentifier]? { get }
+    var _availableLargeLanguageModels: [_MLModelIdentifier]? { get }
     
     /// Complete a given prompt.
     func complete<Prompt: AbstractLLM.Prompt>(
@@ -39,7 +39,7 @@ public protocol LargeLanguageModelServices {
 // MARK: - Implementation
 
 extension LargeLanguageModelServices {
-    public var _availableLLMs: [_MLModelIdentifier]? {
+    public var _availableLargeLanguageModels: [_MLModelIdentifier]? {
         runtimeIssue(.unimplemented)
         
         return nil
