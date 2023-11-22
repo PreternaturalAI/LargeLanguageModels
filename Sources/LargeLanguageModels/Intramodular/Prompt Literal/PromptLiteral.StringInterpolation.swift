@@ -14,7 +14,7 @@ extension PromptLiteral {
             self.components = .init(components)
         }
         
-        @_spi(Private)
+        @_spi(Internal)
         public init(
             payload: StringInterpolation.Component.Payload,
             role: PromptMatterRole? = nil

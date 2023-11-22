@@ -11,13 +11,33 @@ extension PromptLiteral.StringInterpolation {
         public var payload: Payload
         public var context: PromptLiteralContext
                 
-        public init(payload: Payload, context: PromptLiteralContext) {
+        public init(
+            payload: Payload,
+            context: PromptLiteralContext
+        ) {
             self.payload = payload
             self.context = context
             
             if case .promptLiteralConvertible(let value) = payload {
                 assert(!(value is any _opaque_DynamicPromptVariable))
             }
+        }
+        
+        @_spi(Internal)
+        public init(
+            payload: Payload,
+            role: PromptMatterRole? = nil
+        ) {
+            var context = PromptLiteralContext()
+            
+            if let role {
+                context.role = .selected(role)
+            }
+            
+            self.init(
+                payload: payload,
+                context: context
+            )
         }
     }
 }
