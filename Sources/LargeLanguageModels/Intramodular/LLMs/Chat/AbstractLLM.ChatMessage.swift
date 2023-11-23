@@ -2,16 +2,22 @@
 // Copyright (c) Vatsal Manot
 //
 
+import CorePersistence
 import Diagnostics
 import Foundation
 import Swallow
 
 extension AbstractLLM {
     public struct ChatMessage: Codable, Hashable, Sendable {
+        public let id: AnyPersistentIdentifier?
         public let role: ChatRole
         public let content: PromptLiteral
         
-        public init(role: ChatRole, content: PromptLiteral) {
+        public init(
+            id: AnyPersistentIdentifier? = nil,
+            role: ChatRole,
+            content: PromptLiteral
+        ) {
             _expectNoThrow {
                 if let functionCallOrInvocation = try content._degenerate()._getFunctionCallOrInvocation() {
                     if functionCallOrInvocation is AbstractLLM.ChatPrompt.FunctionCall {
@@ -22,12 +28,21 @@ extension AbstractLLM {
                 }
             }
             
+            self.id = id
             self.role = role
             self.content = content
         }
         
-        public init(role: ChatRole, content: String) {
-            self.init(role: role, content: PromptLiteral(stringLiteral: content))
+        public init(
+            id: AnyPersistentIdentifier? = nil,
+            role: ChatRole,
+            content: String
+        ) {
+            self.init(
+                id: id,
+                role: role,
+                content: PromptLiteral(stringLiteral: content)
+            )
         }
     }
 }
@@ -35,7 +50,9 @@ extension AbstractLLM {
 // MARK: - Extensions
 
 extension AbstractLLM.ChatMessage {
-    public mutating func _unsafelyAppend(other message: Self) {
+    public mutating func _unsafelyAppend(
+        other message: Self
+    ) {
         assert(role == message.role)
         
         self = Self(
