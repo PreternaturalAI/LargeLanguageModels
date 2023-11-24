@@ -6,16 +6,22 @@ import CorePersistence
 import Foundation
 import Swallow
 
-@HadeanIdentifier("bagog-golir-jisap-mozop")
-@RuntimeDiscoverable
-public enum _AIModelProvider: Hashable, Sendable {
-    case apple
-    case openAI
-    case anthropic
-    case unknown(String)
+@available(*, deprecated, renamed: "_MLModelIdentifier.Provider")
+public typealias MLModelProvider = _MLModelIdentifier.Provider
+
+extension _MLModelIdentifier {
+    @HadeanIdentifier("bagog-golir-jisap-mozop")
+    @RuntimeDiscoverable
+    public enum Provider: Hashable, Sendable {
+        case apple
+        case openAI
+        case anthropic
+        
+        case unknown(String)
+    }
 }
 
-extension _AIModelProvider: CustomStringConvertible {
+extension _MLModelIdentifier.Provider: CustomStringConvertible {
     public var description: String {
         switch self {
             case .apple:
@@ -30,7 +36,7 @@ extension _AIModelProvider: CustomStringConvertible {
     }
 }
 
-extension _AIModelProvider: RawRepresentable {
+extension _MLModelIdentifier.Provider: RawRepresentable {
     public var rawValue: String {
         switch self {
             case .apple:
@@ -46,6 +52,8 @@ extension _AIModelProvider: RawRepresentable {
     
     public init(rawValue: String) {
         switch rawValue {
+            case Self.apple.rawValue:
+                self = .apple
             case Self.openAI.rawValue:
                 self = .openAI
             case Self.anthropic.rawValue:
@@ -56,7 +64,7 @@ extension _AIModelProvider: RawRepresentable {
     }
 }
 
-extension _AIModelProvider: Codable {
+extension _MLModelIdentifier.Provider: Codable {
     public init(from decoder: Decoder) throws {
         try self.init(rawValue: String(from: decoder))
     }

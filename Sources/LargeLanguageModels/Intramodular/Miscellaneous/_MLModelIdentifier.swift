@@ -6,21 +6,13 @@ import CorePersistence
 import Foundation
 import Swallow
 
-public protocol _MLModelIdentifierConvertible {
-    func __conversion() throws -> _MLModelIdentifier
-}
-
-public protocol _MLModelIdentifierRepresentable: _MLModelIdentifierConvertible {
-    init(from _: _MLModelIdentifier) throws
-}
-
 /// A general purpose type to identify distinct machine-learning models.
 ///
 /// It's intended for use with both local and API-only models.
 @HadeanIdentifier("ludab-gulor-porin-zuvok")
 @RuntimeDiscoverable
 public struct _MLModelIdentifier: Hashable, Sendable {
-    public let provider: _AIModelProvider
+    public let provider: _MLModelIdentifier.Provider
     public let name: String
     public let revision: String?
     
@@ -29,7 +21,7 @@ public struct _MLModelIdentifier: Hashable, Sendable {
     }
     
     public init(
-        provider: _AIModelProvider,
+        provider: _MLModelIdentifier.Provider,
         name: String,
         revision: String?
     ) {
@@ -93,7 +85,7 @@ extension _MLModelIdentifier: Codable {
     }
     
     private struct _WithRevisionRepresentaton: Codable, Hashable {
-        let provider: _AIModelProvider
+        let provider: _MLModelIdentifier.Provider
         let name: String
         let revision: String
     }
