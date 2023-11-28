@@ -93,21 +93,25 @@ extension _MLModelIdentifier: Codable {
     public init(from decoder: Decoder) throws {
         let containerKind = try decoder._determineContainerKind()
         
-        switch containerKind {
-            case .singleValue:
-                let container = try decoder.singleValueContainer()
-                
-                self = try Self(description: container.decode(String.self)).unwrap()
-            case .unkeyed:
-                throw Never.Reason.illegal
-            case .keyed:
-                let representation = try _WithRevisionRepresentaton(from: decoder)
-                
-                self.init(
-                    provider: representation.provider,
-                    name: representation.name,
-                    revision: representation.revision
-                )
+        do {
+            switch containerKind {
+                case .singleValue:
+                    let container = try decoder.singleValueContainer()
+                    
+                    self = try Self(description: container.decode(String.self)).unwrap()
+                case .unkeyed:
+                    throw Never.Reason.illegal
+                case .keyed:
+                    let representation = try _WithRevisionRepresentaton(from: decoder)
+                    
+                    self.init(
+                        provider: representation.provider,
+                        name: representation.name,
+                        revision: representation.revision
+                    )
+            }
+        } catch {
+            throw error
         }
     }
     
