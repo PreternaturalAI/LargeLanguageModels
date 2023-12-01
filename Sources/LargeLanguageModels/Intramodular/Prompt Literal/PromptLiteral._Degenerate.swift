@@ -19,6 +19,10 @@ extension PromptLiteral {
 
 @_spi(Internal)
 extension PromptLiteral {
+    public enum _DegenerationError: Error {
+        case dynamicVariableUnresolved(any _opaque_DynamicPromptVariable)
+    }
+    
     public func _degenerate() throws -> _Degenerate {
         var components: [_Degenerate.Component] = []
         
@@ -66,12 +70,19 @@ extension PromptLiteral {
                         try append(subcomponent)
                     }
                 case .dynamicVariable(let variable):
-                    try append(
-                        _Degenerate.Component(
-                            payload: .dynamicVariable(variable),
-                            context: component.context
-                        )
-                    )
+                    do {
+                        let subcomponents = try variable
+                            .promptLiteral
+                            .merging(component.context)
+                            ._degenerate()
+                            .components
+                        
+                        for subcomponent in subcomponents {
+                            try append(subcomponent)
+                        }
+                    } catch {
+                        throw _DegenerationError.dynamicVariableUnresolved(variable)
+                    }
                 case .other(let other):
                     switch other {
                         case .functionCall(let call):
@@ -117,7 +128,6 @@ extension PromptLiteral._Degenerate.Component {
     public enum PayloadType {
         case string
         case image
-        case dynamicVariable
         case functionCall
         case functionInvocation
     }
@@ -127,7 +137,6 @@ extension PromptLiteral._Degenerate.Component {
         
         case string(String)
         case image(Image)
-        case dynamicVariable(any _opaque_DynamicPromptVariable)
         case functionCall(AbstractLLM.ChatPrompt.FunctionCall)
         case functionInvocation(AbstractLLM.ChatPrompt.FunctionInvocation)
         
@@ -137,8 +146,6 @@ extension PromptLiteral._Degenerate.Component {
                     return .string
                 case .image:
                     return .image
-                case .dynamicVariable:
-                    return .dynamicVariable
                 case .functionCall:
                     return .functionCall
                 case .functionInvocation:
@@ -158,8 +165,6 @@ extension PromptLiteral._Degenerate.Component {
         switch (self.payload, other.payload) {
             case (.string(let lhs), .string(let rhs)):
                 self = .init(payload: .string(lhs + rhs), context: self.context)
-            case (.dynamicVariable, .dynamicVariable):
-                throw Never.Reason.illegal
             case (.functionCall, .functionCall):
                 throw Never.Reason.illegal
             case (.functionInvocation, .functionInvocation):
