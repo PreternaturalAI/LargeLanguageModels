@@ -10,9 +10,13 @@ extension AbstractLLM {
         public typealias CompletionParameters = AbstractLLM.ChatCompletionParameters
         public typealias Completion = AbstractLLM.ChatCompletion
         
-        public struct FunctionCall: Codable, Hashable, Sendable {
+        public struct FunctionCall: Codable, CustomDebugStringConvertible, Hashable, Sendable {
             public let name: String
             public let arguments: String
+            
+            public var debugDescription: String {
+                "<function call: \(name)>"
+            }
             
             public init(name: String, arguments: String) {
                 self.name = name
@@ -76,6 +80,10 @@ extension AbstractLLM.ChatPrompt {
     public struct FunctionInvocation: Codable, Hashable, Sendable {
         public let name: String
         public let result: FunctionResult
+        
+        public var debugDescription: String {
+            "<function invocation: \(name)>"
+        }
         
         public init(name: String, result: FunctionResult) {
             self.name = name

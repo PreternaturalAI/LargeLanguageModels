@@ -232,20 +232,25 @@ extension PromptLiteral.StringInterpolation.Component {
 }
 
 extension PromptLiteral {
+    /// Whether the entirety of this prompt literal is text.
     public var _isKnownString: Bool {
-        guard !isEmpty else {
-            return false
+        get throws {
+            guard try !isEmpty else {
+                return false
+            }
+            
+            return stringInterpolation.components.contains(where: { !$0._isKnownString }) == false
         }
-
-        return stringInterpolation.components.contains(where: { !$0._isKnownString }) == false
     }
     
     /// Whether this prompt literal contains any images.
     public var _containsImages: Bool {
-        guard !isEmpty else {
-            return false
+        get throws {
+            guard try !isEmpty else {
+                return false
+            }
+            
+            return stringInterpolation.components.contains(where: { $0.payload._isImage })
         }
-        
-        return stringInterpolation.components.contains(where: { $0.payload._isImage })
     }
 }

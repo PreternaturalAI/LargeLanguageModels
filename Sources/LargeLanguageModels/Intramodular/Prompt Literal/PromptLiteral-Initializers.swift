@@ -30,7 +30,11 @@ extension PromptLiteral {
             )
         )
         
-        assert(!self.isEmpty)
+        if _isDebugAssertConfiguration {
+            let isEmpty = try self.isEmpty
+            
+            assert(!isEmpty)
+        }
     }
 }
 #endif

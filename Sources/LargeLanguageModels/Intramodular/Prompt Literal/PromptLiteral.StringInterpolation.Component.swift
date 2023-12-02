@@ -42,9 +42,25 @@ extension PromptLiteral.StringInterpolation {
     }
 }
 
+extension PromptLiteral.StringInterpolation {
+    public var _isEmpty: Bool {
+        get throws {
+            let isNotEmpty = try components.contains(where: {
+                try $0.payload._isEmpty != true
+            })
+            
+            return !isNotEmpty
+        }
+    }
+}
+
 // MARK: - Conformances
 
 extension PromptLiteral.StringInterpolation.Component: CustomStringConvertible {
+    public var debugDescription: String {
+        payload.debugDescription
+    }
+
     public var description: String {
         String(describing: payload)
     }

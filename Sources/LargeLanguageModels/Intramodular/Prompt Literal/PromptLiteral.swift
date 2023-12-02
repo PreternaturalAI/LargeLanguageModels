@@ -18,11 +18,13 @@ public struct PromptLiteral: ExpressibleByStringInterpolation, Hashable, Sendabl
     }
     
     public var isEmpty: Bool {
-        if stringInterpolation.components.isEmpty {
-            return true
+        get throws {
+            if stringInterpolation.components.isEmpty {
+                return true
+            }
+            
+            return try stringInterpolation._isEmpty
         }
-        
-        return (try? stringInterpolation.components.toCollectionOfOne().value._stripToText().isEmpty) == true
     }
     
     public init(stringInterpolation: StringInterpolation) {
@@ -104,15 +106,12 @@ extension PromptLiteral: Codable {
 
 extension PromptLiteral: CustomDebugStringConvertible, CustomStringConvertible {
     public var debugDescription: String {
-        do {
-            if let functionCallOrInvocation = try _degenerate()._getFunctionCallOrInvocation() {
-                return String(describing: functionCallOrInvocation)
-            } else {
-                return try _stripToText()
-            }
-        } catch {
-            return "<error>"
-        }
+        return stringInterpolation.components
+            .map({
+                $0.debugDescription
+            })
+            .joined()
+            .trimmingWhitespace()
     }
     
     public var description: String {
@@ -164,7 +163,7 @@ extension PromptLiteral {
                     return PromptLiteral(_lazy: literal)
                 }
             }
-            .filter({ !$0.isEmpty })
+            .filter({ try !$0.isEmpty })
         
         if let separator {
             result.stringInterpolation.components =  literals

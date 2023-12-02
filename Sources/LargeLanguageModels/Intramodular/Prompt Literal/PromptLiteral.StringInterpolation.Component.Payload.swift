@@ -25,6 +25,26 @@ extension PromptLiteral.StringInterpolation.Component {
     }
 }
 
+extension PromptLiteral.StringInterpolation.Component.Payload {
+    public var _isEmpty: Bool {
+        get throws {
+            switch self {
+                case .stringLiteral(let string):
+                    return string.isEmpty
+                case .image:
+                    return false
+                case .localizedStringResource(let string):
+                    return try string._toNSLocalizedString().isEmpty == true
+                case .promptLiteralConvertible(let literal):
+                    return try literal.promptLiteral.isEmpty
+                case .dynamicVariable(let variable):
+                    return try variable.promptLiteral.isEmpty
+                case .other:
+                    return false
+            }
+        }
+    }
+}
 // MARK: - Conformances
 
 extension PromptLiteral.StringInterpolation.Component.Payload: Codable {
@@ -42,6 +62,40 @@ extension PromptLiteral.StringInterpolation.Component.Payload: Codable {
                 try value.encode(to: encoder)
             default:
                 throw Never.Reason.unimplemented
+        }
+    }
+}
+
+extension PromptLiteral.StringInterpolation.Component.Payload: CustomDebugStringConvertible {
+    public var _debugDescription: String {
+        get throws {
+            switch self {
+                case .stringLiteral(let string):
+                    return string
+                case .image:
+                    return "<image>"
+                case .localizedStringResource(let string):
+                    return try string._toNSLocalizedString()
+                case .promptLiteralConvertible(let literal):
+                    return try literal.promptLiteral.debugDescription
+                case .dynamicVariable(let variable):
+                    return try variable.promptLiteral.debugDescription
+                case .other(let value):
+                    switch value {
+                        case .functionCall(let call):
+                            return call.debugDescription
+                        case .functionInvocation(let invocation):
+                            return invocation.debugDescription
+                    }
+            }
+        }
+    }
+    
+    public var debugDescription: String {
+        do {
+            return try _debugDescription
+        } catch {
+            return "<error>"
         }
     }
 }
