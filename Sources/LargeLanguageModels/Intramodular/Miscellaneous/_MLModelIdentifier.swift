@@ -6,6 +6,10 @@ import CorePersistence
 import Foundation
 import Swallow
 
+public protocol _MLModelVendor {
+    
+}
+
 /// A general purpose type to identify distinct machine-learning models.
 ///
 /// It's intended for use with both local and API-only models.

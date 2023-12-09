@@ -23,14 +23,14 @@ extension AbstractLLM {
         }
     }
     
-    public struct ChatCompletionParameters: CompletionParameters, ExpressibleByNilLiteral {
-        public let tokenLimit: TokenLimit
+    public struct ChatCompletionParameters: CompletionParameters {
+        public let tokenLimit: TokenLimit?
         public let temperatureOrTopP: TemperatureOrTopP?
         public let stops: [String]?
         public let functions: [ChatFunctionDefinition]?
         
         public init(
-            tokenLimit: AbstractLLM.TokenLimit = .max,
+            tokenLimit: AbstractLLM.TokenLimit? = nil,
             temperatureOrTopP: AbstractLLM.TemperatureOrTopP? = nil,
             stops: [String]? = nil,
             functions: [ChatFunctionDefinition]? = nil
@@ -40,9 +40,13 @@ extension AbstractLLM {
             self.stops = stops
             self.functions = functions
         }
-        
-        public init(nilLiteral: ()) {
-            self.init(tokenLimit: .max, temperatureOrTopP: nil, stops: nil, functions: nil)
-        }
+    }
+}
+
+// MARK: - Conformances
+
+extension AbstractLLM.ChatCompletionParameters: ExpressibleByNilLiteral {
+    public init(nilLiteral: ()) {
+        self.init(tokenLimit: nil, temperatureOrTopP: nil, stops: nil, functions: nil)
     }
 }

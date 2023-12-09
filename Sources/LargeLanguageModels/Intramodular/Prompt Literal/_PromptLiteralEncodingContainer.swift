@@ -27,6 +27,20 @@ extension PromptLiteral {
     }
 }
 
+extension AbstractLLM.ChatMessage {
+    /// FIXME!!!
+    public func _stripToText() throws -> String {
+        try content._stripToText()
+    }
+}
+
+extension AbstractLLM.ChatPrompt {
+    /// FIXME!!!
+    public func _stripToText() throws -> String {
+        try messages.map({ try $0._stripToText() }).joined()
+    }
+}
+
 extension AbstractLLM.ChatCompletion {
     public func _stripToText() throws -> String {
         try message.content._stripToText()
