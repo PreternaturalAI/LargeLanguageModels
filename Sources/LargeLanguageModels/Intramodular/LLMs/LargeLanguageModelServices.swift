@@ -3,6 +3,7 @@
 //
 
 import Compute
+import CoreGML
 import Merge
 import Swallow
 
@@ -15,7 +16,7 @@ public protocol LargeLanguageModelServices {
     /// The list of available LLMs.
     ///
     /// `nil` if unknown.
-    var _availableLargeLanguageModels: [_MLModelIdentifier]? { get }
+    var _availableLargeLanguageModels: [_GMLModelIdentifier]? { get }
     
     /// Complete a given prompt.
     func complete<Prompt: AbstractLLM.Prompt>(
@@ -39,7 +40,7 @@ public protocol LargeLanguageModelServices {
 // MARK: - Implementation
 
 extension LargeLanguageModelServices {
-    public var _availableLargeLanguageModels: [_MLModelIdentifier]? {
+    public var _availableLargeLanguageModels: [_GMLModelIdentifier]? {
         runtimeIssue(.unimplemented)
         
         return nil

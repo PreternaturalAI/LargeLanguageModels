@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import CoreGML
 import CorePersistence
 import Merge
 import Swallow
@@ -42,10 +43,10 @@ public enum TextEmbeddingsProviderError: Error {
 // MARK: - Auxiliary
 
 public struct TextEmbeddingsGenerationRequest {
-    public let model: _MLModelIdentifier?
+    public let model: _GMLModelIdentifier?
     public let strings: [String]
     
-    public init(model: _MLModelIdentifier?, strings: [String]) {
+    public init(model: _GMLModelIdentifier?, strings: [String]) {
         self.model = model
         self.strings = strings
     }

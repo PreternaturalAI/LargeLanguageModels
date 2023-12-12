@@ -19,6 +19,7 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(url: "https://github.com/PreternaturalAI/CoreGML.git", branch: "main"),
         .package(url: "https://github.com/vmanot/CorePersistence.git", branch: "main"),
         .package(url: "https://github.com/vmanot/Merge.git", branch: "master"),
         .package(url: "https://github.com/vmanot/NetworkKit.git", branch: "master"),
@@ -29,6 +30,7 @@ let package = Package(
             name: "LargeLanguageModels",
             dependencies: [
                 "CorePersistence",
+                "CoreGML",
                 "Merge",
                 "NetworkKit",
                 "Swallow"

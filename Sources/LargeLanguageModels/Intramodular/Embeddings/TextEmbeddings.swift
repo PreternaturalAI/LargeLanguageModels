@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import CoreGML
 import CorePersistence
 import Swallow
 
@@ -15,11 +16,11 @@ public struct TextEmbeddings: Codable, HadeanIdentifiable, Hashable, Sendable {
         "junur-tutuz-zarik-ninab"
     }
     
-    public let model: _MLModelIdentifier
+    public let model: _GMLModelIdentifier
     public let data: [Element]
     
     public init(
-        model: _MLModelIdentifier,
+        model: _GMLModelIdentifier,
         data: [Element]
     ) {
         self.model = model

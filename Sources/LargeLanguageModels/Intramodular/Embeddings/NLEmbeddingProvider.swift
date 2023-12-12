@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import CoreGML
 import NaturalLanguage
 import Swallow
 
@@ -23,7 +24,7 @@ public final class NLEmbeddingProvider: TextEmbeddingsProvider {
         self.language = language
     }
     
-    public var model: _MLModelIdentifier {
+    public var model: _GMLModelIdentifier {
         get throws {
             let languageName = try NLLanguage.Name(language).unwrap().rawValue
             
@@ -72,7 +73,7 @@ public final class NLEmbeddingProvider: TextEmbeddingsProvider {
     }
 }
 
-extension _MLModelIdentifier {
+extension _GMLModelIdentifier {
     /// The on-device word-embedding model provided by Apple.
     public static func wordEmbedding(
         _ language: NLLanguage.Name
