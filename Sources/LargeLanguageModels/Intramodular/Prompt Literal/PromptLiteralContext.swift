@@ -2,25 +2,31 @@
 // Copyright (c) Vatsal Manot
 //
 
+import CorePersistence
 import Swallow
 
-public protocol PromptLiteralContextKey<Value>: HeterogeneousDictionaryKey<PromptContextValues, Self.Value> where Value: Hashable {
+public protocol PromptLiteralContextKey<Value>: HadeanIdentifiable, HeterogeneousDictionaryKey<PromptContextValues, Self.Value> where Value: Hashable {
     static var defaultValue: Value { get }
 }
 
-public struct PromptLiteralContext: HashEquatable, @unchecked Sendable {
+public struct PromptLiteralContext: Codable, HashEquatable, @unchecked Sendable {
     public enum _Error: Error {
         case badMerge
     }
     
-    fileprivate var storage: HeterogeneousDictionary<PromptContextValues>
+    @_UnsafelySerialized
+    var storage: HeterogeneousDictionary<PromptContextValues>
     
     public var isEmpty: Bool {
         storage.isEmpty
     }
     
+    init(storage: HeterogeneousDictionary<PromptContextValues>) {
+        self.storage = storage
+    }
+    
     public init() {
-        self.storage = .init()
+        self.init(storage: .init())
     }
     
     public subscript<Key: PromptLiteralContextKey>(key: Key.Type) -> Key.Value {
@@ -33,10 +39,28 @@ public struct PromptLiteralContext: HashEquatable, @unchecked Sendable {
     
     public func hash(into hasher: inout Hasher) {
         storage.forEach {
-            let pair = Hashable2ple((Metatype($0.key), _HashableExistential(wrappedValue: $0.value)))
+            let pair = Hashable2ple(($0.key, _HashableExistential(wrappedValue: $0.value)))
             
             hasher.combine(pair)
         }
+    }
+    
+    func removingValues(_ keys: some Sequence<any PromptLiteralContextKey.Type>) -> Self {
+        Self(storage: storage.removingValues(forKeys: keys.map({ $0 as Any.Type })))
+    }
+}
+
+// MARK: - Conformances
+
+extension PromptLiteralContext: CustomStringConvertible {
+    public var description: String {
+        storage.description
+    }
+}
+
+extension PromptLiteralContext: Sequence {
+    public func makeIterator() -> HeterogeneousDictionary<PromptContextValues>.Iterator {
+        storage.makeIterator()
     }
 }
 
@@ -56,13 +80,7 @@ extension PromptLiteralContext: ThrowingMergeOperatable {
     }
 }
 
-extension PromptLiteral.StringInterpolation.Component {
-    mutating func merge(
-        _ context: PromptLiteralContext
-    ) throws {
-        try self.context.mergeInPlace(with: context)
-    }
-}
+// MARK: - Auxiliary
 
 extension PromptLiteral {
     public mutating func merge(
@@ -77,10 +95,10 @@ extension PromptLiteral {
         _ context: PromptLiteralContext
     ) throws -> Self {
         try build(self) {
-           try $0.merge(context)
+            try $0.merge(context)
         }
     }
- 
+    
     public func context<Value>(
         _ keyPath: WritableKeyPath<PromptLiteralContext, Value>,
         _ value: Value
@@ -99,5 +117,13 @@ extension PromptLiteral {
                 $0.context[keyPath: keyPath] = value
             })
         }
+    }
+}
+
+extension PromptLiteral.StringInterpolation.Component {
+    mutating func merge(
+        _ context: PromptLiteralContext
+    ) throws {
+        try self.context.mergeInPlace(with: context)
     }
 }

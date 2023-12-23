@@ -7,16 +7,12 @@ import CoreGML
 import Merge
 import Swallow
 
-public struct _LLMServicesConcreteDemand {
-    public let parameters: any AbstractLLM.CompletionParameters
-    public let heuristics: AbstractLLM.CompletionHeuristics
-}
-
+/// A unified interface to an LLM.
 public protocol LargeLanguageModelServices {
     /// The list of available LLMs.
     ///
     /// `nil` if unknown.
-    var _availableLargeLanguageModels: [_GMLModelIdentifier]? { get }
+    var _availableLLMs: [_GMLModelIdentifier]? { get }
     
     /// Complete a given prompt.
     func complete<Prompt: AbstractLLM.Prompt>(
@@ -25,39 +21,30 @@ public protocol LargeLanguageModelServices {
         heuristics: AbstractLLM.CompletionHeuristics
     ) async throws -> Prompt.Completion
     
-    /// Stream a completion for a given prompt.
-    func completion<Prompt: AbstractLLM.Prompt>(
-        for _: Prompt,
-        parameters: Prompt.CompletionParameters,
-        heuristics: AbstractLLM.CompletionHeuristics
-    ) async throws -> AsyncStream<Prompt.Completion.Partial>
-    
-    func _resolved(
-        for demand: _LLMServicesConcreteDemand
-    ) async throws -> any ResolveLargeLanguageModelService
+    /// Stream a completion for a given chat prompt.
+    func completion(
+        for prompt: AbstractLLM.ChatPrompt
+    ) async throws -> AbstractLLM.ChatCompletionStream
 }
 
 // MARK: - Implementation
 
 extension LargeLanguageModelServices {
-    public var _availableLargeLanguageModels: [_GMLModelIdentifier]? {
+    public var _availableLLMs: [_GMLModelIdentifier]? {
         runtimeIssue(.unimplemented)
         
         return nil
     }
     
-    public func completion<Prompt: AbstractLLM.Prompt>(
-        for prompt: Prompt,
-        parameters: Prompt.CompletionParameters,
-        heuristics: AbstractLLM.CompletionHeuristics
-    ) async throws -> AsyncStream<Prompt.Completion.Partial> {
-        fatalError(.unimplemented)
-    }
-    
-    public func _resolved(
-        for demand: _LLMServicesConcreteDemand
-    ) async throws -> any ResolveLargeLanguageModelService {
-        fatalError(.unimplemented)
+    public func completion(
+        for prompt: AbstractLLM.ChatPrompt
+    ) async throws -> AbstractLLM.ChatCompletionStream {
+        AbstractLLM.ChatCompletionStream {
+            try await self.complete(
+                prompt: prompt,
+                parameters: try prompt.context.completionParameters.map({ try cast($0) }) ?? nil
+            )
+        }
     }
 }
 

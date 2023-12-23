@@ -7,12 +7,18 @@ import Diagnostics
 import Foundation
 import Swallow
 
+public protocol __AbstractLLM_ChatMessageConvertible {
+    func __conversion() throws -> AbstractLLM.ChatMessage
+}
+
 extension AbstractLLM {
-    public struct ChatMessage: Codable, Hashable, Sendable {
-        public let id: AnyPersistentIdentifier?
-        public let role: ChatRole
-        public let content: PromptLiteral
-        
+    public typealias ChatMessageConvertible = __AbstractLLM_ChatMessageConvertible
+    
+    public struct ChatMessage: Codable, Hashable, Identifiable, Sendable {
+        public var id: AnyPersistentIdentifier?
+        public var role: ChatRole
+        public var content: PromptLiteral
+
         public init(
             id: AnyPersistentIdentifier? = nil,
             role: ChatRole,
@@ -31,18 +37,6 @@ extension AbstractLLM {
             self.id = id
             self.role = role
             self.content = content
-        }
-        
-        public init(
-            id: AnyPersistentIdentifier? = nil,
-            role: ChatRole,
-            content: String
-        ) {
-            self.init(
-                id: id,
-                role: role,
-                content: PromptLiteral(stringLiteral: content)
-            )
         }
     }
 }
@@ -64,6 +58,12 @@ extension AbstractLLM.ChatMessage {
 
 // MARK: - Conformances
 
+extension AbstractLLM.ChatMessage: AbstractLLM.ChatMessageConvertible {
+    public func __conversion() throws -> AbstractLLM.ChatMessage {
+        self
+    }
+}
+
 extension AbstractLLM.ChatMessage: CustomDebugStringConvertible {
     public var debugDescription: String {
         "[\(role)]: \(content.delimited(by: .quotationMark))"
@@ -73,6 +73,30 @@ extension AbstractLLM.ChatMessage: CustomDebugStringConvertible {
 // MARK: - Initializers
 
 extension AbstractLLM.ChatMessage {
+    public init(
+        id: AnyPersistentIdentifier? = nil,
+        role: AbstractLLM.ChatRole,
+        content: String
+    ) {
+        self.init(
+            id: id,
+            role: role,
+            content: PromptLiteral(stringLiteral: content)
+        )
+    }
+    
+    public init(
+        id: UUID,
+        role: AbstractLLM.ChatRole,
+        content: String
+    ) {
+        self.init(
+            id: AnyPersistentIdentifier(erasing: id),
+            role: role,
+            content: content
+        )
+    }
+    
     public static func assistant(
         _ content: PromptLiteral
     ) -> Self {

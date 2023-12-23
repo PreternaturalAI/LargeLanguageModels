@@ -5,7 +5,7 @@
 import Foundation
 import Swallow
 
-public protocol __AbstractLLM_Completion: CustomDebugStringConvertible, Hashable, Sendable {
+public protocol __AbstractLLM_Completion: Codable, CustomDebugStringConvertible, Hashable, Sendable {
     static var _completionType: AbstractLLM.CompletionType? { get }
 }
 

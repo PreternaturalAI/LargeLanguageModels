@@ -11,6 +11,8 @@ public protocol __AbstractLLM_Prompt: Hashable, Sendable {
     associatedtype Completion: Partializable
     
     static var completionType: AbstractLLM.CompletionType? { get }
+    
+    var context: PromptContextValues { get }
 }
 
 extension AbstractLLM {
@@ -27,11 +29,20 @@ extension AbstractLLM {
         public typealias CompletionParameters = AbstractLLM.ChatOrTextCompletionParameters
         public typealias Completion = AbstractLLM.ChatOrTextCompletion
 
-        case text(TextPrompt)
-        case chat(ChatPrompt)
-        
         public static var completionType: AbstractLLM.CompletionType? {
             nil
+        }
+
+        case text(TextPrompt)
+        case chat(ChatPrompt)
+                
+        public var context: PromptContextValues {
+            switch self {
+                case .text(let prompt):
+                    return prompt.context
+                case .chat(let prompt):
+                    return prompt.context
+            }
         }
     }
 }
@@ -51,11 +62,11 @@ extension AbstractLLM.ChatOrTextPrompt {
     public static func chat(
         _ messages: () -> [AbstractLLM.ChatMessage]
     ) -> Self {
-        .chat(.init(messages: messages()))
+        .chat(AbstractLLM.ChatPrompt(messages: messages(), context: PromptContextValues()))
     }
     
     public static func text(_ literal: any PromptLiteralConvertible) -> Self {
-        .text(.init(prefix: literal))
+        .text(AbstractLLM.TextPrompt(prefix: literal))
     }
     
     public func appending(

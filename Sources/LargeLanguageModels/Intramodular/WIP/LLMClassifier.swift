@@ -74,8 +74,8 @@ public enum NaiveLLMClassifiers {
                     stops: ["\n"]
                 )
             )
-            .text
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+                .text
+                .trimmingCharacters(in: .whitespacesAndNewlines)
             
             guard completion == "Yes" || completion == "No" else {
                 throw _AssertionFailure()

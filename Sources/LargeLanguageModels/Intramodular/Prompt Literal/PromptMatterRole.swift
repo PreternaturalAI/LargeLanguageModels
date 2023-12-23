@@ -2,10 +2,12 @@
 // Copyright (c) Vatsal Manot
 //
 
+import CoreGML
+import CorePersistence
 import Swallow
 
-public enum PromptMatterRole: Hashable, Sendable {
-    public enum Text: CaseIterable, Hashable, Sendable {
+public enum PromptMatterRole: Codable, Hashable, Sendable {
+    public enum Text: String, CaseIterable, Codable, Hashable, Sendable {
         case prefix
     }
 
@@ -30,7 +32,9 @@ extension PromptMatterRole: CaseIterable {
     }
 }
 
-public enum _PromptMatterRoleConstraints: Hashable, Sendable, ThrowingMergeOperatable {
+@HadeanIdentifier("duzod-nagiv-mokas-gilaz")
+@RuntimeDiscoverable
+public enum _PromptMatterRoleConstraints: Codable, Hashable, Sendable, ThrowingMergeOperatable {
     public enum _Error: Error {
         case unsupportedCompletionType
         case noClearSelection
@@ -118,7 +122,9 @@ public enum _PromptMatterRoleConstraints: Hashable, Sendable, ThrowingMergeOpera
 }
 
 extension PromptLiteralContext {
-    private struct PromptMatterRoleKey: PromptLiteralContextKey {
+    @RuntimeDiscoverable
+    @HadeanIdentifier("bijoz-nipoh-rakuh-fudum")
+    struct PromptMatterRoleKey: PromptLiteralContextKey {
         typealias Value = _PromptMatterRoleConstraints?
         
         static let defaultValue: Value = nil
@@ -129,6 +135,23 @@ extension PromptLiteralContext {
             self[PromptMatterRoleKey.self]
         } set {
             self[PromptMatterRoleKey.self] = newValue
+        }
+    }
+}
+
+extension PromptLiteralContext {
+    @HadeanIdentifier("rajil-pagik-tibah-jibod")
+    struct ModelIdentifierKey: PromptLiteralContextKey {
+        typealias Value = _GMLModelIdentifierScope?
+        
+        static var defaultValue: _GMLModelIdentifierScope? = nil
+    }
+    
+    public var modelIdentifier: _GMLModelIdentifierScope? {
+        get {
+            self[ModelIdentifierKey.self]
+        } set {
+            self[ModelIdentifierKey.self] = newValue
         }
     }
 }

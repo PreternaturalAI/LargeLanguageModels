@@ -7,10 +7,10 @@ import Foundation
 import Swallow
 
 extension PromptLiteral.StringInterpolation {
-    public struct Component: Hashable, Sendable {        
+    public struct Component: Hashable, Sendable {
         public var payload: Payload
         public var context: PromptLiteralContext
-                
+        
         public init(
             payload: Payload,
             context: PromptLiteralContext
@@ -60,21 +60,40 @@ extension PromptLiteral.StringInterpolation.Component: CustomStringConvertible {
     public var debugDescription: String {
         payload.debugDescription
     }
-
+    
     public var description: String {
         String(describing: payload)
     }
 }
 
 extension PromptLiteral.StringInterpolation.Component: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case payload
+        case context
+    }
+    
     public init(from decoder: Decoder) throws {
-        self.payload = try Payload(from: decoder)
-        self.context = .init()
+        do {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            self.payload = try container.decode(Payload.self, forKey: .payload)
+            self.context = try container.decodeIfPresent(PromptLiteralContext.self, forKey: .context) ?? .init()
+        } catch {
+            if let payload = try? Payload(from: decoder) {
+                self.payload = payload
+                self.context = .init()
+                
+                runtimeIssue(.deprecated)
+            } else {
+                throw error
+            }
+        }
     }
     
     public func encode(to encoder: Encoder) throws {
-        assert(context.isEmpty, "unimplemented")
+        var container = encoder.container(keyedBy: CodingKeys.self)
 
-        try payload.encode(to: encoder)
+        try container.encode(payload, forKey: .payload)
+        try container.encode(context, forKey: .context)
     }
 }

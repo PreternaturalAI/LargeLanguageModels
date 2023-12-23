@@ -10,6 +10,22 @@ extension PromptLiteral {
     public struct StringInterpolation: Hashable, Sendable, StringInterpolationProtocol {        
         public var components: [Component]
         
+        /// The context shared amongst all the components.
+        public var _sharedContext: PromptLiteralContext {
+            get {
+                let shared = components.map({ Dictionary($0.context.storage) })
+                    .sharedKeysByEqualValue(where: {
+                        try! _HashableExistential(erasing: $0) == _HashableExistential(erasing: $1)
+                    })
+                
+                return PromptLiteralContext(storage: .init(_unsafeStorage: shared))
+            } set {
+                components._forEach(mutating: {
+                    try! $0.context.mergeInPlace(with: newValue)
+                })
+            }
+        }
+        
         public init(components: some Collection<Component>) {
             self.components = .init(components)
         }
@@ -129,7 +145,10 @@ extension PromptLiteral.StringInterpolation {
     public mutating func appendInterpolation(
         _ interpolation: PromptLiteral
     ) {
-        components.append(contentsOf: interpolation.stringInterpolation.components)
+        components.append(
+            contentsOf: interpolation.stringInterpolation.components,
+            join: PromptLiteral.StringInterpolation.Component._join
+        )
     }
     
     public mutating func appendInterpolation(
@@ -142,9 +161,43 @@ extension PromptLiteral.StringInterpolation {
         _ interpolation: any PromptLiteralConvertible
     ) {
         if let variable = interpolation as? (any _opaque_DynamicPromptVariable) {
-            components.append(.init(payload: .dynamicVariable(variable), context: .init()))
+            components.append(Component(payload: .dynamicVariable(variable), context: .init()))
         } else {
-            appendInterpolation(.init(_lazy: interpolation))
+            appendInterpolation(PromptLiteral(_lazy: interpolation))
+        }
+    }
+}
+
+extension PromptLiteral.StringInterpolation.Component {
+    static func _join(_ lhs: Self, _ rhs: Self) -> Self? {
+        guard let context = try? lhs.context.merging(rhs.context) else {
+            return nil
+        }
+        
+        let payload: Payload
+        
+        switch (lhs.payload, rhs.payload) {
+            case (.stringLiteral(let lhs), .stringLiteral(let rhs)):
+                payload = .stringLiteral(lhs + rhs)
+            default:
+                return nil
+        }
+        
+        return Self(payload: payload, context: context)
+    }
+}
+
+extension RangeReplaceableCollection where Self: BidirectionalCollection & MutableCollection {
+    public mutating func append(
+        contentsOf newElements: some Sequence<Element>,
+        join: (Element, Element) -> Element?
+    ) {
+        for element in newElements {
+            if let last, let joined = join(last, element) {
+                self.mutableLast = joined
+            } else {
+                self.append(element)
+            }
         }
     }
 }

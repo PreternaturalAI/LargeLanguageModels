@@ -23,15 +23,32 @@ extension AbstractLLM {
                 self.arguments = arguments
             }
         }
-                
+        
         public static var completionType: AbstractLLM.CompletionType? {
             .chat
         }
         
         public var messages: [AbstractLLM.ChatMessage]
+        public var context: PromptContextValues {
+            didSet {
+                if context.completionType != nil {
+                    assert(context.completionType == .chat)
+                } else {
+                    context.completionType = .chat
+                }
+            }
+        }
         
-        public init(messages: [AbstractLLM.ChatMessage]) {
+        public init(
+            messages: [AbstractLLM.ChatMessage],
+            context: PromptContextValues
+        ) {
             self.messages = messages
+            self.context = context
+            
+            if context.completionType != nil {
+                assert(context.completionType == .chat)
+            }
         }
     }
 }
@@ -55,11 +72,13 @@ extension AbstractLLM.ChatPrompt {
     ) {
         messages.append(message)
     }
-
+    
     public func appending(
         _ message: AbstractLLM.ChatMessage
     ) -> Self {
-        .init(messages: messages.appending(message))
+        withMutableScope(self) {
+            $0.append(message)
+        }
     }
 }
 
@@ -75,7 +94,7 @@ extension AbstractLLM.ChatPrompt: CustomDebugStringConvertible {
 
 extension AbstractLLM.ChatPrompt: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: AbstractLLM.ChatMessage...) {
-        self.init(messages: elements)
+        self.init(messages: elements, context: PromptContextValues())
     }
 }
 

@@ -6,7 +6,7 @@ import Foundation
 import Swallow
 
 extension AbstractLLM {
-    public struct TextPrompt: AbstractLLM.Prompt, CustomDebugStringConvertible, Hashable, Sendable {
+    public struct TextPrompt: AbstractLLM.Prompt, Hashable, Sendable {
         public typealias CompletionParameters = AbstractLLM.TextCompletionParameters
         public typealias Completion = AbstractLLM.TextCompletion
         
@@ -16,18 +16,25 @@ extension AbstractLLM {
         
         @_HashableExistential
         public var prefix: any PromptLiteralConvertible
+        public var context: PromptContextValues
         
-        public var debugDescription: String {
-            PromptLiteral(_lazy: prefix).debugDescription
-        }
-        
-        public init(prefix: any PromptLiteralConvertible) {
+        public init(
+            prefix: any PromptLiteralConvertible,
+            context: PromptContextValues = .init()
+        ) {
             self.prefix = prefix
+            self.context = context
         }
     }
 }
 
 // MARK: - Conformances
+
+extension AbstractLLM.TextPrompt: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        PromptLiteral(_lazy: prefix).debugDescription
+    }
+}
 
 extension AbstractLLM.TextPrompt: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {

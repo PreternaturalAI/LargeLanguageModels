@@ -95,11 +95,17 @@ extension PromptLiteral: ExpressibleByStringLiteral {
 }
 
 extension PromptLiteral: Codable {
-    public init(from decoder: Decoder) throws {
-        self.init(stringInterpolation: .init(components: try Array<StringInterpolation.Component>(from: decoder)))
+    public init(
+        from decoder: Decoder
+    ) throws {
+        self.init(
+            stringInterpolation: .init(components: try Array<StringInterpolation.Component>(from: decoder))
+        )
     }
     
-    public func encode(to encoder: Encoder) throws {
+    public func encode(
+        to encoder: Encoder
+    ) throws {
         try stringInterpolation.components.encode(to: encoder)
     }
 }

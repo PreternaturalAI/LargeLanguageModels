@@ -116,7 +116,7 @@ extension PromptLiteral {
                 
                 popCurrentMessage()
                 
-                return AbstractLLM.ChatPrompt(messages: messages)._joiningMessageTypes()
+                return AbstractLLM.ChatPrompt(messages: messages, context: PromptContextValues())._joiningMessageTypes()
         }
     }
 }
@@ -176,6 +176,6 @@ extension AbstractLLM.ChatPrompt {
             }
         }
         
-        return .init(messages: newMessages)
+        return .init(messages: newMessages, context: .init())
     }
 }
