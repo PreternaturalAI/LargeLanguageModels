@@ -7,9 +7,19 @@ import Foundation
 import Swallow
 
 extension PromptLiteral {
-    public struct StringInterpolation: Hashable, Sendable, StringInterpolationProtocol {        
+    public struct StringInterpolation: Hashable, Sendable, StringInterpolationProtocol {
         public var components: [Component]
         
+        public var _isEmpty: Bool {
+            get throws {
+                let isNotEmpty = try components.contains(where: {
+                    try $0.payload._isEmpty != true
+                })
+                
+                return !isNotEmpty
+            }
+        }
+
         /// The context shared amongst all the components.
         public var _sharedContext: PromptLiteralContext {
             get {
@@ -30,7 +40,7 @@ extension PromptLiteral {
             self.components = .init(components)
         }
         
-        @_spi(Internal)
+        @_transparent
         public init(
             payload: StringInterpolation.Component.Payload,
             role: PromptMatterRole? = nil
@@ -76,7 +86,7 @@ extension PromptLiteral.StringInterpolation.Component.Payload: _MaybeAsyncProtoc
                 return false
         }
     }
-
+    
     public func _resolveToNonAsync() async throws -> Self {
         switch self {
             case .stringLiteral:
@@ -120,28 +130,7 @@ extension PromptLiteral: _MaybeAsyncProtocol {
 }
 
 extension PromptLiteral.StringInterpolation {
-    public mutating func appendLiteral(
-        _ literal: String
-    ) {
-        components.append(.init(payload: .stringLiteral(literal), context: .init()))
-    }
-    
-    public mutating func appendLiteral(
-        _ literal: PromptLiteral
-    ) {
-        components.append(contentsOf: literal.stringInterpolation.components)
-    }
-    
-    public mutating func appendLiteral(
-        _ literal: any PromptLiteralConvertible
-    ) {
-        if let variable = literal as? (any _opaque_DynamicPromptVariable) {
-            components.append(.init(payload: .dynamicVariable(variable), context: .init()))
-        } else {
-            appendLiteral(PromptLiteral(_lazy: literal))
-        }
-    }
-    
+    @_transparent
     public mutating func appendInterpolation(
         _ interpolation: PromptLiteral
     ) {
@@ -151,53 +140,49 @@ extension PromptLiteral.StringInterpolation {
         )
     }
     
+    @_transparent
     public mutating func appendInterpolation(
         _ interpolation: String
     ) {
         appendInterpolation(PromptLiteral(stringLiteral: interpolation))
     }
     
+    @_disfavoredOverload
+    @_transparent
     public mutating func appendInterpolation(
         _ interpolation: any PromptLiteralConvertible
     ) {
         if let variable = interpolation as? (any _opaque_DynamicPromptVariable) {
-            components.append(Component(payload: .dynamicVariable(variable), context: .init()))
+            appendInterpolation(PromptLiteral(stringInterpolation: Self(payload: .dynamicVariable(variable))))
         } else {
             appendInterpolation(PromptLiteral(_lazy: interpolation))
         }
     }
-}
 
-extension PromptLiteral.StringInterpolation.Component {
-    static func _join(_ lhs: Self, _ rhs: Self) -> Self? {
-        guard let context = try? lhs.context.merging(rhs.context) else {
-            return nil
-        }
-        
-        let payload: Payload
-        
-        switch (lhs.payload, rhs.payload) {
-            case (.stringLiteral(let lhs), .stringLiteral(let rhs)):
-                payload = .stringLiteral(lhs + rhs)
-            default:
-                return nil
-        }
-        
-        return Self(payload: payload, context: context)
-    }
-}
-
-extension RangeReplaceableCollection where Self: BidirectionalCollection & MutableCollection {
-    public mutating func append(
-        contentsOf newElements: some Sequence<Element>,
-        join: (Element, Element) -> Element?
+    @_transparent
+    public mutating func appendLiteral(
+        _ literal: String
     ) {
-        for element in newElements {
-            if let last, let joined = join(last, element) {
-                self.mutableLast = joined
-            } else {
-                self.append(element)
-            }
+        appendInterpolation(literal)
+    }
+    
+    @_transparent
+    public mutating func appendLiteral(
+        _ literal: PromptLiteral
+    ) {
+        appendInterpolation(literal)
+    }
+    
+    @_transparent
+    public mutating func appendLiteral(
+        _ literal: any PromptLiteralConvertible
+    ) {
+        if let literal = literal as? PromptLiteral {
+            appendInterpolation(literal)
+        } else if let variable = literal as? (any _opaque_DynamicPromptVariable) {
+            appendInterpolation(PromptLiteral(stringInterpolation: Self(payload: .dynamicVariable(variable))))
+        } else {
+            appendInterpolation(PromptLiteral(_lazy: literal))
         }
     }
 }
@@ -208,19 +193,19 @@ extension PromptLiteral {
     ) {
         stringInterpolation.components.append(component)
     }
-
+    
     public mutating func insert(
         contentsOf components: some Sequence<StringInterpolation.Component>
     ) {
         stringInterpolation.components.insert(contentsOf: components)
     }
-
+    
     public mutating func insert(
         _ component: StringInterpolation.Component.Payload
     ) {
         insert(.init(payload: component, context: .init()))
     }
-
+    
     @_spi(Private)
     public func inserting(
         contentsOf components: some Sequence<StringInterpolation.Component>
@@ -229,7 +214,7 @@ extension PromptLiteral {
             $0.insert(contentsOf: components)
         }
     }
-
+    
     public mutating func append(
         _ component: StringInterpolation.Component
     ) {

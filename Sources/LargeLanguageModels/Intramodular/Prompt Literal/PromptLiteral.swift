@@ -50,7 +50,7 @@ extension PromptLiteral {
         role: PromptMatterRole?
     ) throws {
         try _tryAssert(role == .chat(.assistant))
-
+        
         self.init(stringInterpolation: .init(payload: .other(.functionCall(call)), role: role))
     }
     
@@ -62,7 +62,7 @@ extension PromptLiteral {
         
         self.init(stringInterpolation: .init(payload: .other(.functionInvocation(invocation)), role: role))
     }
-        
+    
     public init(_lazy value: any PromptLiteralConvertible) {
         if let value = value as? PromptLiteral {
             self = value
@@ -90,7 +90,7 @@ extension PromptLiteral: ExpressibleByStringLiteral {
     public init(stringLiteral: String) {
         self.init(stringInterpolation: .init(literalCapacity: 1, interpolationCount: 0))
         
-        stringInterpolation.appendLiteral(stringLiteral)
+        stringInterpolation.components = [StringInterpolation.Component(payload: .stringLiteral(stringLiteral), context: PromptLiteralContext())]
     }
 }
 
@@ -99,7 +99,7 @@ extension PromptLiteral: Codable {
         from decoder: Decoder
     ) throws {
         self.init(
-            stringInterpolation: .init(components: try Array<StringInterpolation.Component>(from: decoder))
+            stringInterpolation: StringInterpolation(components: try Array<StringInterpolation.Component>(from: decoder))
         )
     }
     
@@ -172,18 +172,30 @@ extension PromptLiteral {
             .filter({ try !$0.isEmpty })
         
         if let separator {
-            result.stringInterpolation.components =  literals
-                .interspersed(
-                    with: PromptLiteral(stringLiteral: separator),
-                    where: { !$0._skipSeparatorInConcatenation }
+            result.stringInterpolation.appendInterpolation(
+                PromptLiteral(
+                    stringInterpolation: PromptLiteral.StringInterpolation(
+                        components: literals
+                            .interspersed(
+                                with: PromptLiteral(stringLiteral: separator),
+                                where: { !$0._skipSeparatorInConcatenation }
+                            )
+                            .flatMap({ $0.stringInterpolation.components })
+                    )
                 )
-                .flatMap({ $0.stringInterpolation.components })
+            )
         } else {
-            result.stringInterpolation.components = literals.flatMap {
-                $0.stringInterpolation.components
-            }
+            result.stringInterpolation.appendInterpolation(
+                PromptLiteral(
+                    stringInterpolation: PromptLiteral.StringInterpolation(
+                        components: literals.flatMap {
+                            $0.stringInterpolation.components
+                        }
+                    )
+                )
+            )
         }
-        
+
         return result
     }
     

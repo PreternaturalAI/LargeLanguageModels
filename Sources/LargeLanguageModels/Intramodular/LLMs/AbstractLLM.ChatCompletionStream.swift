@@ -79,6 +79,14 @@ extension AbstractLLM {
         }
         
         public convenience init(
+            _ publisher: @escaping () async throws -> some Publisher<AbstractLLM.ChatCompletionStream.Event, Error>
+        ) {
+            self.init(base: _PublisherChatCompletionStreamAdaptor(base: {
+                try await publisher().eraseToAnyPublisher()
+            }))
+        }
+        
+        public convenience init(
             completion: @escaping () async throws -> AbstractLLM.ChatCompletion
         ) {
             self.init {
@@ -87,7 +95,7 @@ extension AbstractLLM {
                 }
             }
         }
-
+        
         public func receive<S: Subscriber<Event, Error>>(
             subscriber: S
         ) {
@@ -225,6 +233,132 @@ extension AbstractLLM {
                 .receive(subscriber: subscriber)
             
             _start()
+        }
+    }
+    
+    public final class _PublisherChatCompletionStreamAdaptor: __AbstractLLM_ChatCompletionStreamProtocol {
+        private let cancellables = Cancellables()
+        private let subject = PassthroughSubject<Event, Swift.Error>()
+        private let makeBase: () async throws -> AnyPublisher<AbstractLLM.ChatCompletionStream.Event, Error>
+        
+        private var base: AnyPublisher<AbstractLLM.ChatCompletionStream.Event, Error>?
+        
+        private let _messageSubject = PassthroughSubject<AbstractLLM.ChatMessage, Error>()
+        
+        @Published private var _message: AbstractLLM.ChatMessage?
+        @Published private var _state: State = .waiting
+        
+        var currentMessage: AbstractLLM.ChatMessage.Partial?
+        var stopReason: AbstractLLM.ChatCompletion.StopReason?
+        
+        public var message: AbstractLLM.ChatMessage? {
+            _message
+        }
+        
+        public var messagePublisher: AnyPublisher<AbstractLLM.ChatMessage, Error> {
+            _messageSubject
+                .onSubscribe { [weak self] in
+                    self?._start()
+                }
+                .eraseToAnyPublisher()
+        }
+        
+        public var state: State {
+            _state
+        }
+        
+        public init(
+            base: @escaping () async throws -> AnyPublisher<AbstractLLM.ChatCompletionStream.Event, Error>
+        ) {
+            self.makeBase = base
+        }
+        
+        public func receive<S: Subscriber<Event, Error>>(
+            subscriber: S
+        ) {
+            guard base == nil else {
+                assertionFailure()
+                
+                return
+            }
+            
+            subject.receive(subscriber: subscriber)
+            
+            _start()
+        }
+
+        private func _start() {
+            Task(priority: .high) {
+                guard self.base == nil else {
+                    return
+                }
+                
+                let publisher = try await makeBase()
+                
+                self.base = publisher
+                
+                publisher
+                    .onSubscribe {
+                        self._state = .streaming
+                    }
+                    .receive(on: DispatchQueue.main)
+                    .sink(
+                        receiveCompletion: { completion in
+                            self._setCompleted()
+                        },
+                        receiveValue: { event in
+                            self._receive(event: event)
+                        }
+                    )
+                    .store(in: cancellables)
+            }
+            ._expectNoThrow()
+        }
+        
+        func _setCompleted() {
+            guard _state != .completed else {
+                return
+            }
+            
+            subject.send(.stop)
+            subject.send(completion: .finished)
+
+            _state = .completed
+        }
+        
+        private func _receive(
+            event: AbstractLLM.ChatCompletionStream.Event
+        ) {
+            switch event {
+                case .completion(let completion):
+                    do {
+                        if let partial = try AbstractLLM.ChatMessage.Partial.coalesce([currentMessage, completion.message]) {
+                            var message = try AbstractLLM.ChatMessage(from: partial)
+                            
+                            if message.id == nil {
+                                message.id = .init(erasing: UUID())
+                            }
+                            
+                            self._message = message
+                            
+                            currentMessage = AbstractLLM.ChatMessage.Partial(whole: message)
+                            
+                            _messageSubject.send(message)
+                        } else {
+                            assert(self._message == nil && completion.message == nil)
+                        }
+                        
+                        stopReason = completion.stopReason
+                        
+                        subject.send(event)
+                    } catch {
+                        cancellables.cancel()
+                        
+                        _setCompleted()
+                    }
+                case .stop:
+                    _setCompleted()
+            }
         }
     }
 }

@@ -42,15 +42,23 @@ extension PromptLiteral.StringInterpolation {
     }
 }
 
-extension PromptLiteral.StringInterpolation {
-    public var _isEmpty: Bool {
-        get throws {
-            let isNotEmpty = try components.contains(where: {
-                try $0.payload._isEmpty != true
-            })
-            
-            return !isNotEmpty
+extension PromptLiteral.StringInterpolation.Component {
+    @usableFromInline
+    static func _join(_ lhs: Self, _ rhs: Self) -> Self? {
+        guard let context = try? lhs.context.merging(rhs.context) else {
+            return nil
         }
+        
+        let payload: Payload
+        
+        switch (lhs.payload, rhs.payload) {
+            case (.stringLiteral(let lhs), .stringLiteral(let rhs)):
+                payload = .stringLiteral(lhs + rhs)
+            default:
+                return nil
+        }
+        
+        return Self(payload: payload, context: context)
     }
 }
 
