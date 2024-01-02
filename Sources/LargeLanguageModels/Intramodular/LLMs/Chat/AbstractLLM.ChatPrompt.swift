@@ -41,7 +41,7 @@ extension AbstractLLM {
         
         public init(
             messages: [AbstractLLM.ChatMessage],
-            context: PromptContextValues
+            context: PromptContextValues = PromptContextValues()
         ) {
             self.messages = messages
             self.context = context

@@ -36,8 +36,8 @@ extension AbstractLLM.ChatCompletion: CustomDebugStringConvertible {
 
 extension AbstractLLM.ChatCompletion: Partializable {
     public struct Partial: Codable, CustomStringConvertible, Hashable, Sendable {
-        public let message: AbstractLLM.ChatMessage.Partial?
-        public let stopReason: StopReason?
+        public var message: AbstractLLM.ChatMessage.Partial?
+        public var stopReason: StopReason?
         
         public var description: String {
             var result: String = ""

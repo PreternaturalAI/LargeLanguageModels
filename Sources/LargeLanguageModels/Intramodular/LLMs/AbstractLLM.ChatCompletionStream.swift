@@ -90,8 +90,14 @@ extension AbstractLLM {
             completion: @escaping () async throws -> AbstractLLM.ChatCompletion
         ) {
             self.init {
-                AsyncThrowingStream.just {
-                    try await Event.completion(.init(whole: completion()))
+                AsyncThrowingStream.just { () -> Event in
+                    var completion = AbstractLLM.ChatCompletion.Partial(whole: try await completion())
+                    
+                    if completion.stopReason == nil {
+                        completion.stopReason = .init()
+                    }
+                    
+                    return Event.completion(completion)
                 }
             }
         }
@@ -180,9 +186,12 @@ extension AbstractLLM {
         }
         
         func _setCompleted() {
-            if stopReason != nil {
-                assert(_state != .completed)
+            guard _state != .completed else {
+                return
             }
+            
+            subject.send(.stop)
+            subject.send(completion: .finished)
             
             _state = .completed
         }
@@ -212,10 +221,12 @@ extension AbstractLLM {
                     stopReason = completion.stopReason
                     
                     subject.send(event)
+                    
+                    if stopReason != nil {
+                        _setCompleted()
+                    }
                 case .stop:
                     _setCompleted()
-                    
-                    subject.send(.stop)
             }
         }
         
@@ -286,7 +297,7 @@ extension AbstractLLM {
             
             _start()
         }
-
+        
         private func _start() {
             Task(priority: .high) {
                 guard self.base == nil else {
@@ -322,7 +333,7 @@ extension AbstractLLM {
             
             subject.send(.stop)
             subject.send(completion: .finished)
-
+            
             _state = .completed
         }
         
